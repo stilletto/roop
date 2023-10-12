@@ -18,12 +18,34 @@ import tensorflow
 import roop.globals
 import roop.metadata
 import roop.ui as ui
-from roop.predictor import predict_image, predict_video
+# from roop.predictor import predict_image, predict_video
 from roop.processors.frame.core import get_frame_processors_modules
 from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp, normalize_output_path
 
 warnings.filterwarnings('ignore', category=FutureWarning, module='insightface')
 warnings.filterwarnings('ignore', category=UserWarning, module='torchvision')
+
+
+def set_args(args):
+    roop.globals.source_path = args["source_path"]
+    roop.globals.target_path = args["target_path"]
+    roop.globals.output_path = args["output_path"]
+    roop.globals.headless = True
+    roop.globals.frame_processors = ['face_swapper']
+    roop.globals.keep_fps = True
+    roop.globals.keep_frames = True
+    roop.globals.skip_audio = False
+    roop.globals.many_faces = False
+    roop.globals.reference_face_position = 0
+    roop.globals.reference_frame_number = 0
+    roop.globals.similar_face_distance = 0.85
+    roop.globals.temp_frame_format = 'png'
+    roop.globals.temp_frame_quality = 0
+    roop.globals.output_video_encoder = 'libx264'
+    roop.globals.output_video_quality = 0
+    roop.globals.max_memory = 22
+    roop.globals.execution_providers = ["cuda"]
+    roop.globals.execution_threads = 7
 
 
 def parse_args() -> None:
@@ -54,7 +76,7 @@ def parse_args() -> None:
     roop.globals.source_path = args.source_path
     roop.globals.target_path = args.target_path
     roop.globals.output_path = normalize_output_path(roop.globals.source_path, roop.globals.target_path, args.output_path)
-    roop.globals.headless = roop.globals.source_path is not None and roop.globals.target_path is not None and roop.globals.output_path is not None
+    roop.globals.headless = True
     roop.globals.frame_processors = args.frame_processor
     roop.globals.keep_fps = args.keep_fps
     roop.globals.keep_frames = args.keep_frames
@@ -134,8 +156,8 @@ def start() -> None:
             return
     # process image to image
     if has_image_extension(roop.globals.target_path):
-        if predict_image(roop.globals.target_path):
-            destroy()
+        # if predict_image(roop.globals.target_path):
+        #     destroy()
         shutil.copy2(roop.globals.target_path, roop.globals.output_path)
         # process frame
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
@@ -149,8 +171,8 @@ def start() -> None:
             update_status('Processing to image failed!')
         return
     # process image to videos
-    if predict_video(roop.globals.target_path):
-        destroy()
+    # if predict_video(roop.globals.target_path):
+    #     destroy()
     update_status('Creating temporary resources...')
     create_temp(roop.globals.target_path)
     # extract frames
@@ -205,8 +227,13 @@ def destroy() -> None:
     sys.exit()
 
 
-def run() -> None:
-    parse_args()
+
+
+def run(args=None):
+    if not args:
+        parse_args()
+    else:
+        set_args(args)
     if not pre_check():
         return
     for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
