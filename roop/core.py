@@ -44,7 +44,7 @@ def set_args(args):
     roop.globals.output_video_encoder = 'libx264'
     roop.globals.output_video_quality = 0
     roop.globals.max_memory = 22
-    roop.globals.execution_providers = ["cuda"]
+    roop.globals.execution_providers = decode_execution_providers("cuda")
     roop.globals.execution_threads = 7
 
 
