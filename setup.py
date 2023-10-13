@@ -1,6 +1,6 @@
 from setuptools import setup
 
-with open('requirements.txt') as f:
+with open('requirements-headless.txt') as f:
     required = f.read().splitlines()
 setup(
     name='roop',
